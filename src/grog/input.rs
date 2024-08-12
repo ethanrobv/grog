@@ -1,13 +1,12 @@
 use std::collections::HashMap;
-use std::io;
 use console::Key;
 use console::Term;
 
 struct Stack<T: Clone> {
     data: Vec<T>,
     max_capacity: usize,
-    bottom: i32,
-    top: i32,
+    bottom: usize,
+    top: usize,
 }
 
 impl<T: Clone> Stack<T> {
@@ -22,10 +21,10 @@ impl<T: Clone> Stack<T> {
 
     pub fn push(&mut self, element: T) {
         if self.is_full() {
-            self.bottom = (self.bottom + 1) % self.max_capacity as i32;
+            self.bottom = (self.bottom + 1) % self.max_capacity;
         }
         self.data.push(element);
-        self.top = (self.top + 1) % self.max_capacity as i32;
+        self.top = (self.top + 1) % self.max_capacity;
     }
 
     pub fn peek(&self) -> Option<T> {
@@ -40,28 +39,39 @@ impl<T: Clone> Stack<T> {
     }
 
     fn is_full(&self) -> bool {
-        (self.top + 1) % self.max_capacity as i32 == self.bottom
+        (self.top + 1) % self.max_capacity == self.bottom
     }
 }
 
 pub struct Input {
+    // cursor pos
+    pub cursor_x_pos: usize,
+    pub cursor_y_pos: usize,
     // keyboard input
     keys: Stack<Key>,
-    input_map: HashMap<Key, Box<dyn Fn(&Input) -> io::Result<()>>>,
+    input_map: HashMap<Key,fn(&mut Input) -> ()>,
 }
 
 impl Input {
     pub fn new() -> Input {
-        let mut input_map: HashMap<Key, Box<dyn Fn(&Input) -> io::Result<()>>> = HashMap::new();
-        input_map.insert(Key::ArrowRight, Box::new(Input::arrow_key_right));
-        input_map.insert(Key::ArrowLeft, Box::new(Input::arrow_key_left));
-        input_map.insert(Key::ArrowUp, Box::new(Input::arrow_key_up));
-        input_map.insert(Key::ArrowDown, Box::new(Input::arrow_key_down));
+        let mut input_map: HashMap<Key, fn(&mut Input) -> ()> = HashMap::new();
+        input_map.insert(Key::ArrowRight, Input::arrow_key_right);
+        input_map.insert(Key::ArrowLeft, Input::arrow_key_left);
+        input_map.insert(Key::ArrowUp, Input::arrow_key_up);
+        input_map.insert(Key::ArrowDown, Input::arrow_key_down);
 
         Input {
             keys: Stack::new(8),
             input_map,
+            cursor_x_pos: 0,
+            cursor_y_pos: 0,
         }
+    }
+
+    pub fn process_key_event(&mut self) -> Option<()> {
+        let key = self.last_key()?;
+        let action = self.input_map.get(&key)?;
+        Some(action(self))
     }
 
     pub fn get_key(&mut self) {
@@ -74,26 +84,27 @@ impl Input {
         self.keys.peek()
     }
 
-    pub fn process_events(&self) -> Option<io::Result<()>> {
-        match self.last_key() {
-            Some(key) => self.input_map.get(&key).map(|action| action(self)),
-            None => None,
+    pub fn arrow_key_right(&mut self) -> () {
+        self.cursor_x_pos += 1
+    }
+
+    pub fn arrow_key_left(&mut self) -> () {
+        if self.cursor_x_pos > 0 {
+            self.cursor_x_pos -= 1
+        } else {
+            self.cursor_x_pos = 0
         }
     }
 
-    pub fn arrow_key_right(&self) -> io::Result<()> {
-        Term::stdout().move_cursor_right(1)
+    pub fn arrow_key_up(&mut self) -> () {
+        if self.cursor_y_pos > 0 {
+            self.cursor_y_pos -= 1
+        } else {
+            self.cursor_y_pos = 0
+        }
     }
 
-    pub fn arrow_key_left(&self) -> io::Result<()> {
-        Term::stdout().move_cursor_left(1)
-    }
-
-    pub fn arrow_key_up(&self) -> io::Result<()> {
-        Term::stdout().move_cursor_up(1)
-    }
-
-    pub fn arrow_key_down(&self) -> io::Result<()> {
-        Term::stdout().move_cursor_down(1)
+    pub fn arrow_key_down(&mut self) -> () {
+        self.cursor_y_pos += 1
     }
 }

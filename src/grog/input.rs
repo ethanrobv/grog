@@ -63,8 +63,8 @@ impl Input {
         Input {
             keys: Stack::new(8),
             input_map,
-            cursor_x_pos: 0,
-            cursor_y_pos: 0,
+            cursor_x_pos: 1,
+            cursor_y_pos: 1,
         }
     }
 
@@ -85,26 +85,36 @@ impl Input {
     }
 
     pub fn arrow_key_right(&mut self) -> () {
-        self.cursor_x_pos += 1
+        let terminal_width: usize = Term::stdout().size().1 as usize;
+        if self.cursor_x_pos >= terminal_width - 2 {
+            self.cursor_x_pos = terminal_width - 2
+        } else {
+            self.cursor_x_pos += 1
+        }
     }
 
     pub fn arrow_key_left(&mut self) -> () {
-        if self.cursor_x_pos > 0 {
+        if self.cursor_x_pos > 1 {
             self.cursor_x_pos -= 1
         } else {
-            self.cursor_x_pos = 0
+            self.cursor_x_pos = 1
         }
     }
 
     pub fn arrow_key_up(&mut self) -> () {
-        if self.cursor_y_pos > 0 {
+        if self.cursor_y_pos > 1 {
             self.cursor_y_pos -= 1
         } else {
-            self.cursor_y_pos = 0
+            self.cursor_y_pos = 1
         }
     }
 
     pub fn arrow_key_down(&mut self) -> () {
-        self.cursor_y_pos += 1
+        let terminal_height: usize = Term::stdout().size().0 as usize;
+        if self.cursor_y_pos >= terminal_height - 2 {
+            self.cursor_y_pos = terminal_height - 2
+        } else {
+            self.cursor_y_pos += 1
+        }
     }
 }

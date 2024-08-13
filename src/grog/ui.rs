@@ -29,7 +29,7 @@ impl UI {
 
     pub fn draw_main_menu(&mut self) {
         let header_footer_row = "*".repeat(self.terminal_width as usize);
-        let body_row = format!("*{}*", " ".repeat((self.terminal_width-2) as usize));
+        let body_row = format!("*{}*", " ".repeat((self.terminal_width - 2) as usize));
 
         let mut display_buffer = String::new();
         display_buffer.push_str(&header_footer_row);

@@ -44,8 +44,10 @@ impl UI {
 
     pub fn render(&self) {
         let mut term = Term::stdout();
+        term.hide_cursor().unwrap();
         term.clear_screen().unwrap();
         term.write_all(self.current_display.as_bytes()).unwrap();
+        term.show_cursor().unwrap();
         io::stdout().flush().unwrap();
     }
 }

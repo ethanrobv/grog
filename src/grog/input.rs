@@ -85,7 +85,7 @@ impl Input {
     }
 
     pub fn arrow_key_right(&mut self) -> () {
-        let terminal_width: usize = Term::stdout().size().1 as usize;
+        let terminal_width = Term::stdout().size().1 as usize;
         if self.cursor_x_pos >= terminal_width - 2 {
             self.cursor_x_pos = terminal_width - 2
         } else {
@@ -110,7 +110,7 @@ impl Input {
     }
 
     pub fn arrow_key_down(&mut self) -> () {
-        let terminal_height: usize = Term::stdout().size().0 as usize;
+        let terminal_height = Term::stdout().size().0 as usize;
         if self.cursor_y_pos >= terminal_height - 2 {
             self.cursor_y_pos = terminal_height - 2
         } else {
